@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "target": "ES2018",
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "strict": false,
+    "paths": {
+      "@/*": ["./*"]
+    }
+  },
+  "include": ["scripts/**/*.ts"],
+  "exclude": ["node_modules"]
+}
