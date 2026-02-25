@@ -120,3 +120,4 @@ See `scripts/supabase-schema.sql` for the full schema including RLS policies.
 | `users` | User profiles linked to auth.users |
 | `posts` | Community posts with images + tags |
 | `saved_posts` | Bookmarked posts per user |
+# alhara
