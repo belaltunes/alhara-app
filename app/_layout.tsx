@@ -20,13 +20,13 @@ if (Platform.OS !== "web") {
 }
 
 export default function RootLayout() {
-  const [fontsLoaded] = useFonts({ Almarai_400Regular, Almarai_700Bold });
+  const [fontsLoaded, fontError] = useFonts({ Almarai_400Regular, Almarai_700Bold });
 
   useEffect(() => {
-    if (fontsLoaded) SplashScreen.hideAsync();
-  }, [fontsLoaded]);
+    if (fontsLoaded || fontError) SplashScreen.hideAsync();
+  }, [fontsLoaded, fontError]);
 
-  if (!fontsLoaded) return null;
+  if (!fontsLoaded && !fontError) return null;
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
