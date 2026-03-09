@@ -3,7 +3,6 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  Alert,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -36,6 +35,13 @@ const ARABIC_CITIES = [
   "أريحا",
 ];
 
+const PASSWORD_RULES = [
+  { id: "length",    label: "8 أحرف على الأقل",           test: (p: string) => p.length >= 8 },
+  { id: "upper",     label: "حرف كبير واحد على الأقل (A-Z)", test: (p: string) => /[A-Z]/.test(p) },
+  { id: "lower",     label: "حرف صغير واحد على الأقل (a-z)", test: (p: string) => /[a-z]/.test(p) },
+  { id: "number",    label: "رقم واحد على الأقل (0-9)",    test: (p: string) => /[0-9]/.test(p) },
+];
+
 export default function SignupScreen() {
   const { signUp } = useAuth();
   const router = useRouter();
@@ -48,22 +54,30 @@ export default function SignupScreen() {
   const [showConfirm, setShowConfirm] = useState(false);
   const [loading, setLoading] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
+  const [errorMsg, setErrorMsg] = useState("");
+  const [passwordFocused, setPasswordFocused] = useState(false);
+
+  const passwordStrong = PASSWORD_RULES.every((r) => r.test(password));
+  const passwordsMatch = confirmPassword.length > 0 && password === confirmPassword;
+  const passwordsMismatch = confirmPassword.length > 0 && password !== confirmPassword;
 
   const handleSignup = async () => {
+    setErrorMsg("");
+
     if (!displayName.trim()) {
-      Alert.alert("خطأ", "يرجى إدخال الاسم");
+      setErrorMsg("يرجى إدخال الاسم");
       return;
     }
     if (!email.trim() || !email.includes("@")) {
-      Alert.alert("خطأ", "يرجى إدخال بريد إلكتروني صحيح");
+      setErrorMsg("يرجى إدخال بريد إلكتروني صحيح");
       return;
     }
-    if (password.length < 6) {
-      Alert.alert("خطأ", "يجب أن تكون كلمة المرور 6 أحرف على الأقل");
+    if (!passwordStrong) {
+      setErrorMsg("كلمة المرور لا تستوفي الشروط المطلوبة");
       return;
     }
-    if (password !== confirmPassword) {
-      Alert.alert("خطأ", "كلمتا المرور غير متطابقتين");
+    if (!passwordsMatch) {
+      setErrorMsg("كلمتا المرور غير متطابقتين");
       return;
     }
 
@@ -78,7 +92,7 @@ export default function SignupScreen() {
     setLoading(false);
 
     if (error) {
-      Alert.alert("خطأ في إنشاء الحساب", error);
+      setErrorMsg(error);
     } else {
       setEmailSent(true);
     }
@@ -94,6 +108,7 @@ export default function SignupScreen() {
           >
             <Ionicons name="mail-outline" size={40} color={colors.primary} />
           </View>
+
           <Text
             style={{
               fontFamily: "Almarai_700Bold",
@@ -105,27 +120,60 @@ export default function SignupScreen() {
           >
             تحقق من بريدك الإلكتروني
           </Text>
+
           <Text
             style={{
               fontFamily: "Almarai_400Regular",
               fontSize: 14,
               color: colors.muted,
               textAlign: "center",
-              lineHeight: 22,
+              lineHeight: 24,
+              marginBottom: 8,
             }}
           >
-            أرسلنا رابط التأكيد إلى{"\n"}
-            <Text style={{ color: colors.primary, fontFamily: "Almarai_700Bold" }}>
-              {email}
-            </Text>
-            {"\n"}يرجى النقر على الرابط لتفعيل حسابك
+            تم إنشاء حسابك بنجاح 🎉{"\n"}أرسلنا رابط التأكيد إلى
           </Text>
+
+          <Text
+            style={{
+              fontFamily: "Almarai_700Bold",
+              fontSize: 14,
+              color: colors.primary,
+              textAlign: "center",
+              marginBottom: 8,
+            }}
+          >
+            {email}
+          </Text>
+
+          <Text
+            style={{
+              fontFamily: "Almarai_400Regular",
+              fontSize: 14,
+              color: colors.muted,
+              textAlign: "center",
+              lineHeight: 24,
+            }}
+          >
+            يرجى فتح البريد الإلكتروني والنقر على رابط التأكيد لتفعيل حسابك
+          </Text>
+
           <TouchableOpacity
             onPress={() => router.replace("/(auth)/login")}
             className="mt-10 items-center justify-center rounded-lg"
-            style={{ backgroundColor: colors.btnBlue, minHeight: 44, paddingHorizontal: 40 }}
+            style={{
+              backgroundColor: colors.btnBlue,
+              minHeight: 48,
+              paddingHorizontal: 40,
+            }}
           >
-            <Text style={{ fontFamily: "Almarai_700Bold", fontSize: 14, color: "white" }}>
+            <Text
+              style={{
+                fontFamily: "Almarai_700Bold",
+                fontSize: 14,
+                color: "white",
+              }}
+            >
               الذهاب إلى تسجيل الدخول
             </Text>
           </TouchableOpacity>
@@ -184,7 +232,7 @@ export default function SignupScreen() {
                   placeholder="الاسم"
                   placeholderTextColor={colors.muted}
                   value={displayName}
-                  onChangeText={setDisplayName}
+                  onChangeText={(v) => { setDisplayName(v); setErrorMsg(""); }}
                   style={inputStyle}
                   textAlign="right"
                 />
@@ -199,7 +247,7 @@ export default function SignupScreen() {
                   placeholder="البريد الإلكتروني"
                   placeholderTextColor={colors.muted}
                   value={email}
-                  onChangeText={setEmail}
+                  onChangeText={(v) => { setEmail(v); setErrorMsg(""); }}
                   autoCapitalize="none"
                   keyboardType="email-address"
                   style={inputStyle}
@@ -210,18 +258,28 @@ export default function SignupScreen() {
               {/* Password */}
               <View
                 className="flex-row-reverse items-center border rounded-lg px-3"
-                style={containerStyle}
+                style={[
+                  containerStyle,
+                  password.length > 0
+                    ? { borderColor: passwordStrong ? "#16a34a" : colors.border }
+                    : {},
+                ]}
               >
                 <TextInput
                   placeholder="كلمة المرور"
                   placeholderTextColor={colors.muted}
                   value={password}
-                  onChangeText={setPassword}
+                  onChangeText={(v) => { setPassword(v); setErrorMsg(""); }}
+                  onFocus={() => setPasswordFocused(true)}
+                  onBlur={() => setPasswordFocused(false)}
                   secureTextEntry={!showPassword}
                   style={inputStyle}
                   textAlign="right"
                 />
-                <TouchableOpacity onPress={() => setShowPassword(!showPassword)} className="ml-2">
+                <TouchableOpacity
+                  onPress={() => setShowPassword(!showPassword)}
+                  className="ml-2"
+                >
                   <Ionicons
                     name={showPassword ? "eye-off-outline" : "eye-outline"}
                     size={20}
@@ -230,21 +288,76 @@ export default function SignupScreen() {
                 </TouchableOpacity>
               </View>
 
+              {/* Password requirements checklist */}
+              {(passwordFocused || password.length > 0) && (
+                <View
+                  className="rounded-lg px-3 py-3"
+                  style={{ backgroundColor: "#F8F9FA" }}
+                >
+                  <Text
+                    style={{
+                      fontFamily: "Almarai_700Bold",
+                      fontSize: 12,
+                      color: colors.muted,
+                      textAlign: "right",
+                      marginBottom: 6,
+                    }}
+                  >
+                    يجب أن تحتوي كلمة المرور على:
+                  </Text>
+                  {PASSWORD_RULES.map((rule) => {
+                    const met = rule.test(password);
+                    return (
+                      <View
+                        key={rule.id}
+                        className="flex-row-reverse items-center"
+                        style={{ marginBottom: 4 }}
+                      >
+                        <Ionicons
+                          name={met ? "checkmark-circle" : "ellipse-outline"}
+                          size={16}
+                          color={met ? "#16a34a" : colors.muted}
+                          style={{ marginLeft: 6 }}
+                        />
+                        <Text
+                          style={{
+                            fontFamily: "Almarai_400Regular",
+                            fontSize: 12,
+                            color: met ? "#16a34a" : colors.muted,
+                            textAlign: "right",
+                          }}
+                        >
+                          {rule.label}
+                        </Text>
+                      </View>
+                    );
+                  })}
+                </View>
+              )}
+
               {/* Confirm Password */}
               <View
                 className="flex-row-reverse items-center border rounded-lg px-3"
-                style={containerStyle}
+                style={[
+                  containerStyle,
+                  confirmPassword.length > 0
+                    ? { borderColor: passwordsMatch ? "#16a34a" : "#DC2626" }
+                    : {},
+                ]}
               >
                 <TextInput
                   placeholder="تأكيد كلمة المرور"
                   placeholderTextColor={colors.muted}
                   value={confirmPassword}
-                  onChangeText={setConfirmPassword}
+                  onChangeText={(v) => { setConfirmPassword(v); setErrorMsg(""); }}
                   secureTextEntry={!showConfirm}
                   style={inputStyle}
                   textAlign="right"
                 />
-                <TouchableOpacity onPress={() => setShowConfirm(!showConfirm)} className="ml-2">
+                <TouchableOpacity
+                  onPress={() => setShowConfirm(!showConfirm)}
+                  className="ml-2"
+                >
                   <Ionicons
                     name={showConfirm ? "eye-off-outline" : "eye-outline"}
                     size={20}
@@ -252,6 +365,24 @@ export default function SignupScreen() {
                   />
                 </TouchableOpacity>
               </View>
+
+              {/* Password match feedback */}
+              {passwordsMatch && (
+                <View className="flex-row-reverse items-center" style={{ marginTop: -6 }}>
+                  <Ionicons name="checkmark-circle" size={15} color="#16a34a" style={{ marginLeft: 4 }} />
+                  <Text style={{ fontFamily: "Almarai_400Regular", fontSize: 12, color: "#16a34a" }}>
+                    كلمتا المرور متطابقتان
+                  </Text>
+                </View>
+              )}
+              {passwordsMismatch && (
+                <View className="flex-row-reverse items-center" style={{ marginTop: -6 }}>
+                  <Ionicons name="close-circle" size={15} color="#DC2626" style={{ marginLeft: 4 }} />
+                  <Text style={{ fontFamily: "Almarai_400Regular", fontSize: 12, color: "#DC2626" }}>
+                    كلمتا المرور غير متطابقتين
+                  </Text>
+                </View>
+              )}
 
               {/* Location */}
               <View
@@ -298,12 +429,41 @@ export default function SignupScreen() {
                 </View>
               </ScrollView>
 
+              {/* Inline error message */}
+              {errorMsg !== "" && (
+                <View
+                  className="flex-row-reverse items-center rounded-lg px-3 py-2"
+                  style={{ backgroundColor: "#FEE2E2" }}
+                >
+                  <Ionicons
+                    name="alert-circle-outline"
+                    size={18}
+                    color="#DC2626"
+                    style={{ marginLeft: 6 }}
+                  />
+                  <Text
+                    style={{
+                      fontFamily: "Almarai_400Regular",
+                      fontSize: 13,
+                      color: "#DC2626",
+                      textAlign: "right",
+                      flex: 1,
+                    }}
+                  >
+                    {errorMsg}
+                  </Text>
+                </View>
+              )}
+
               {/* Create Account Button */}
               <TouchableOpacity
                 onPress={handleSignup}
                 disabled={loading}
                 className="items-center justify-center rounded-lg mt-2"
-                style={{ backgroundColor: colors.btnBlue, minHeight: 44 }}
+                style={{
+                  backgroundColor: loading ? colors.muted : colors.btnBlue,
+                  minHeight: 48,
+                }}
               >
                 {loading ? (
                   <ActivityIndicator color="white" />

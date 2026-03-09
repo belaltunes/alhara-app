@@ -3,7 +3,6 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  Alert,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -29,17 +28,19 @@ export default function LoginScreen() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState("");
 
   const handleLogin = async () => {
+    setErrorMsg("");
     if (!emailOrPhone.trim()) {
-      Alert.alert("خطأ", "يرجى إدخال البريد الإلكتروني أو رقم الهاتف");
+      setErrorMsg("يرجى إدخال البريد الإلكتروني أو رقم الهاتف");
       return;
     }
     setLoading(true);
     const { error } = await signIn(emailOrPhone.trim(), password);
     setLoading(false);
     if (error) {
-      Alert.alert("خطأ في تسجيل الدخول", error);
+      setErrorMsg(error);
     } else {
       router.replace("/(main)");
     }
@@ -135,6 +136,32 @@ export default function LoginScreen() {
                   />
                 </TouchableOpacity>
               </View>
+
+              {/* Inline error */}
+              {errorMsg !== "" && (
+                <View
+                  className="flex-row-reverse items-center rounded-lg px-3 py-2"
+                  style={{ backgroundColor: "#FEE2E2" }}
+                >
+                  <Ionicons
+                    name="alert-circle-outline"
+                    size={18}
+                    color="#DC2626"
+                    style={{ marginLeft: 6 }}
+                  />
+                  <Text
+                    style={{
+                      fontFamily: "Almarai_400Regular",
+                      fontSize: 13,
+                      color: "#DC2626",
+                      textAlign: "right",
+                      flex: 1,
+                    }}
+                  >
+                    {errorMsg}
+                  </Text>
+                </View>
+              )}
 
               {/* Login Button */}
               <TouchableOpacity
