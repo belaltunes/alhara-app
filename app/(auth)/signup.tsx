@@ -16,6 +16,13 @@ import { colors } from "@/constants/theme";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 
+function getEmailRedirectUrl() {
+  if (Platform.OS === "web" && typeof window !== "undefined") {
+    return `${window.location.origin}/email-confirmed`;
+  }
+  return "alhara://email-confirmed";
+}
+
 const ARABIC_CITIES = [
   "القدس",
   "رام الله",
@@ -40,6 +47,7 @@ export default function SignupScreen() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [emailSent, setEmailSent] = useState(false);
 
   const handleSignup = async () => {
     if (!displayName.trim()) {
@@ -60,17 +68,71 @@ export default function SignupScreen() {
     }
 
     setLoading(true);
-    const { error } = await signUp(email.trim(), password, displayName.trim(), location);
+    const { error } = await signUp(
+      email.trim(),
+      password,
+      displayName.trim(),
+      location,
+      getEmailRedirectUrl()
+    );
     setLoading(false);
 
     if (error) {
       Alert.alert("خطأ في إنشاء الحساب", error);
     } else {
-      Alert.alert("تم إنشاء الحساب", "تم إنشاء حسابك بنجاح!", [
-        { text: "حسناً", onPress: () => router.replace("/(main)") },
-      ]);
+      setEmailSent(true);
     }
   };
+
+  if (emailSent) {
+    return (
+      <SafeAreaView className="flex-1 bg-white">
+        <View className="flex-1 items-center justify-center px-8">
+          <View
+            className="w-20 h-20 rounded-full items-center justify-center mb-6"
+            style={{ backgroundColor: `${colors.primary}15` }}
+          >
+            <Ionicons name="mail-outline" size={40} color={colors.primary} />
+          </View>
+          <Text
+            style={{
+              fontFamily: "Almarai_700Bold",
+              fontSize: 22,
+              color: colors.primary,
+              textAlign: "center",
+              marginBottom: 12,
+            }}
+          >
+            تحقق من بريدك الإلكتروني
+          </Text>
+          <Text
+            style={{
+              fontFamily: "Almarai_400Regular",
+              fontSize: 14,
+              color: colors.muted,
+              textAlign: "center",
+              lineHeight: 22,
+            }}
+          >
+            أرسلنا رابط التأكيد إلى{"\n"}
+            <Text style={{ color: colors.primary, fontFamily: "Almarai_700Bold" }}>
+              {email}
+            </Text>
+            {"\n"}يرجى النقر على الرابط لتفعيل حسابك
+          </Text>
+          <TouchableOpacity
+            onPress={() => router.replace("/(auth)/login")}
+            className="mt-10 items-center justify-center rounded-lg"
+            style={{ backgroundColor: colors.btnBlue, minHeight: 44, paddingHorizontal: 40 }}
+          >
+            <Text style={{ fontFamily: "Almarai_700Bold", fontSize: 14, color: "white" }}>
+              الذهاب إلى تسجيل الدخول
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   const inputStyle = {
     flex: 1,

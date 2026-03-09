@@ -85,6 +85,8 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     storage,
     autoRefreshToken: true,
     persistSession: true,
-    detectSessionInUrl: false,
+    // Must be true on web so Supabase can pick up the token from the
+    // confirmation link URL and exchange it for a session automatically.
+    detectSessionInUrl: Platform.OS === "web",
   },
 });
