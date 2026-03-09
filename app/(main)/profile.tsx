@@ -74,12 +74,19 @@ export default function ProfileScreen() {
         <View>
           {/* Profile Header */}
           <View style={styles.profileHeader}>
-            {/* Name + Location + Avatar */}
-            <View style={styles.profileInfo}>
+            {/* Name + Location + Avatar — tapping navigates to settings */}
+            <TouchableOpacity
+              style={styles.profileInfo}
+              onPress={() => router.push("/(main)/profile-settings")}
+              activeOpacity={0.75}
+            >
               <View style={styles.nameLocation}>
-                <Text style={styles.nameText}>
-                  {profile?.display_name ?? "مستخدم"}
-                </Text>
+                <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
+                  <Ionicons name="chevron-back" size={14} color={colors.muted} />
+                  <Text style={styles.nameText}>
+                    {profile?.display_name ?? "مستخدم"}
+                  </Text>
+                </View>
                 <View style={styles.locationRow}>
                   <Text style={styles.locationText}>
                     {profile?.location ?? ""}
@@ -96,7 +103,7 @@ export default function ProfileScreen() {
                 name={profile?.display_name}
                 size={47}
               />
-            </View>
+            </TouchableOpacity>
 
             {/* Sign Out */}
             <TouchableOpacity
