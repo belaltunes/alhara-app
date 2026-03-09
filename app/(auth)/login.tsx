@@ -25,7 +25,6 @@ const instagramIconUrl =
 export default function LoginScreen() {
   const { signIn } = useAuth();
   const router = useRouter();
-  const [name, setName] = useState("");
   const [emailOrPhone, setEmailOrPhone] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -74,31 +73,6 @@ export default function LoginScreen() {
 
             {/* Input Fields */}
             <View className="w-4/5 gap-y-3">
-              {/* Name Input */}
-              <View
-                className="flex-row-reverse items-center border rounded-lg px-3"
-                style={{
-                  borderColor: colors.border,
-                  minHeight: 44,
-                  backgroundColor: "white",
-                }}
-              >
-                <TextInput
-                  placeholder="الاسم"
-                  placeholderTextColor={colors.muted}
-                  value={name}
-                  onChangeText={setName}
-                  style={{
-                    flex: 1,
-                    fontFamily: "Almarai_400Regular",
-                    fontSize: 14,
-                    color: colors.foreground,
-                    textAlign: "right",
-                  }}
-                  textAlign="right"
-                />
-              </View>
-
               {/* Email/Phone Input */}
               <View
                 className="flex-row-reverse items-center border rounded-lg px-3"
