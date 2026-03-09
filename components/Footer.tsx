@@ -12,18 +12,18 @@ export default function Footer({ onUserPress }: FooterProps) {
 
   return (
     <View style={styles.container}>
-      {/* Left: Search */}
+      {/* Left: Upload Post */}
       <TouchableOpacity
-        onPress={() => router.push("/(main)/search")}
+        onPress={() => router.push("/(main)/upload-post")}
         style={styles.button}
-        accessibilityLabel="البحث"
+        accessibilityLabel="إضافة منشور"
       >
-        <View style={styles.searchCircle}>
-          <Ionicons name="search-outline" size={20} color={colors.primary} />
+        <View style={styles.uploadCircle}>
+          <Ionicons name="add" size={26} color="white" />
         </View>
       </TouchableOpacity>
 
-      {/* Right: User */}
+      {/* Right: User Profile */}
       <TouchableOpacity
         onPress={onUserPress ?? (() => router.push("/(main)/profile"))}
         style={styles.button}
@@ -48,12 +48,17 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  searchCircle: {
-    width: 30,
-    height: 30,
-    borderRadius: 15,
-    backgroundColor: "transparent",
+  uploadCircle: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: colors.primary,
     alignItems: "center",
     justifyContent: "center",
+    shadowColor: colors.primary,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.35,
+    shadowRadius: 4,
+    elevation: 4,
   },
 });
