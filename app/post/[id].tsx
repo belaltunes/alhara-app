@@ -75,8 +75,29 @@ export default function PostDetailScreen() {
       <ScrollView showsVerticalScrollIndicator={false} bounces>
 
         {/* ── 1. Title (left) + Avatar & Name (right) ── */}
+        {/* Web is LTR: title first = left, user second = right.
+            Native is RTL: first child = right, so swap order to keep
+            title visually on left and avatar visually on right. */}
         <View style={styles.postHeader}>
-          {/* LEFT: title */}
+          {Platform.OS !== "web" && (
+            <TouchableOpacity
+              style={styles.userBlock}
+              onPress={() => router.push(`/user/${post.user_id}`)}
+              activeOpacity={0.75}
+            >
+              <Avatar uri={post.user?.avatar_url} name={post.user?.display_name} size={44} />
+              <Text style={styles.userName} numberOfLines={1}>
+                {post.user?.display_name ?? "مستخدم"}
+              </Text>
+              {post.user?.location ? (
+                <View style={styles.locationRow}>
+                  <Ionicons name="location-outline" size={12} color={colors.muted} />
+                  <Text style={styles.locationText}>{post.user.location}</Text>
+                </View>
+              ) : null}
+            </TouchableOpacity>
+          )}
+
           <View style={styles.titleBlock}>
             <Text style={styles.title}>{post.title}</Text>
             {post.subtitle ? (
@@ -86,27 +107,24 @@ export default function PostDetailScreen() {
             ) : null}
           </View>
 
-          {/* RIGHT: avatar + name */}
-          <TouchableOpacity
-            style={styles.userBlock}
-            onPress={() => router.push(`/user/${post.user_id}`)}
-            activeOpacity={0.75}
-          >
-            <Avatar
-              uri={post.user?.avatar_url}
-              name={post.user?.display_name}
-              size={44}
-            />
-            <Text style={styles.userName} numberOfLines={1}>
-              {post.user?.display_name ?? "مستخدم"}
-            </Text>
-            {post.user?.location ? (
-              <View style={styles.locationRow}>
-                <Ionicons name="location-outline" size={12} color={colors.muted} />
-                <Text style={styles.locationText}>{post.user.location}</Text>
-              </View>
-            ) : null}
-          </TouchableOpacity>
+          {Platform.OS === "web" && (
+            <TouchableOpacity
+              style={styles.userBlock}
+              onPress={() => router.push(`/user/${post.user_id}`)}
+              activeOpacity={0.75}
+            >
+              <Avatar uri={post.user?.avatar_url} name={post.user?.display_name} size={44} />
+              <Text style={styles.userName} numberOfLines={1}>
+                {post.user?.display_name ?? "مستخدم"}
+              </Text>
+              {post.user?.location ? (
+                <View style={styles.locationRow}>
+                  <Ionicons name="location-outline" size={12} color={colors.muted} />
+                  <Text style={styles.locationText}>{post.user.location}</Text>
+                </View>
+              ) : null}
+            </TouchableOpacity>
+          )}
         </View>
 
         {/* ── 2. Images with slide + counter ── */}
