@@ -74,12 +74,12 @@ export default function PostDetailScreen() {
 
       <ScrollView showsVerticalScrollIndicator={false} bounces>
 
-        {/* ── 1. Title (left) + Avatar & Name (right) ── */}
-        {/* Web is LTR: title first = left, user second = right.
-            Native is RTL: first child = right, so swap order to keep
-            title visually on left and avatar visually on right. */}
+        {/* ── 1. Avatar (left) + Title (right) ── */}
+        {/* Web LTR:     avatar FIRST → visual LEFT,  title SECOND → visual RIGHT
+            Native RTL:  title  FIRST → visual RIGHT, avatar LAST  → visual LEFT */}
         <View style={styles.postHeader}>
-          {Platform.OS !== "web" && (
+          {/* Avatar — first on web (LEFT), last on native (LEFT in RTL) */}
+          {Platform.OS === "web" && (
             <TouchableOpacity
               style={styles.userBlock}
               onPress={() => router.push(`/user/${post.user_id}`)}
@@ -98,6 +98,7 @@ export default function PostDetailScreen() {
             </TouchableOpacity>
           )}
 
+          {/* Title — right side on both platforms */}
           <View style={styles.titleBlock}>
             <Text style={styles.title}>{post.title}</Text>
             {post.subtitle ? (
@@ -107,7 +108,8 @@ export default function PostDetailScreen() {
             ) : null}
           </View>
 
-          {Platform.OS === "web" && (
+          {/* Avatar — last on native so RTL places it on the LEFT */}
+          {Platform.OS !== "web" && (
             <TouchableOpacity
               style={styles.userBlock}
               onPress={() => router.push(`/user/${post.user_id}`)}
