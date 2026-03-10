@@ -261,16 +261,17 @@ const styles = StyleSheet.create({
   titleBlock: {
     flex: 1,
     gap: 8,
+    alignItems: "flex-end",
   },
   title: {
     fontFamily: "Almarai_700Bold",
     fontSize: 18,
     color: colors.foreground,
-    textAlign: "left",
+    textAlign: "right",
     lineHeight: 26,
   },
   subtitlePill: {
-    alignSelf: "flex-start",
+    alignSelf: "flex-end",
     backgroundColor: `${colors.primary}12`,
     borderRadius: 20,
     paddingHorizontal: 10,
@@ -353,6 +354,7 @@ const styles = StyleSheet.create({
   actionsRow: {
     flexDirection: "row",
     alignItems: "center",
+    justifyContent: "flex-end",
     paddingHorizontal: 16,
     paddingVertical: 10,
     gap: 10,
@@ -393,9 +395,10 @@ const styles = StyleSheet.create({
   },
   tagsBlock: {
     flex: 1,
-    flexDirection: "row",
+    flexDirection: "row-reverse",
     flexWrap: "wrap",
     gap: 6,
+    justifyContent: "flex-start",
   },
   pricePill: {
     backgroundColor: `${colors.accent}15`,
