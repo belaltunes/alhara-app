@@ -80,13 +80,23 @@ export function useToggleSave(postId: string, userId: string | undefined) {
     mutationFn: async () => {
       if (!userId) throw new Error("Not authenticated");
       if (isSaved && savedEntry) {
-        await supabase.from("saved_posts").delete().eq("id", savedEntry.id);
+        const { error } = await supabase
+          .from("saved_posts")
+          .delete()
+          .eq("id", savedEntry.id);
+        if (error) throw error;
       } else {
-        await supabase.from("saved_posts").insert({ user_id: userId, post_id: postId });
+        const { error } = await supabase
+          .from("saved_posts")
+          .insert({ user_id: userId, post_id: postId });
+        if (error) throw error;
       }
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["saved_posts", userId] });
+    },
+    onError: () => {
+      // Silently fail for mock posts or when DB isn't set up
     },
   });
 

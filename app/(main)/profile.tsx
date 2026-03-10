@@ -5,7 +5,6 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   StyleSheet,
-  Alert,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { useState } from "react";
@@ -16,6 +15,7 @@ import { useUserPosts, useSavedPosts } from "@/hooks/usePosts";
 import { colors } from "@/constants/theme";
 import Avatar from "@/components/Avatar";
 import PostCard from "@/components/PostCard";
+import SavedPostTile from "@/components/SavedPostTile";
 import { Post } from "@/types";
 
 type Tab = "posts" | "saved";
@@ -24,23 +24,20 @@ export default function ProfileScreen() {
   const { user, signOut } = useAuth();
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<Tab>("posts");
+  const [confirmSignOut, setConfirmSignOut] = useState(false);
 
   const { data: profile, isLoading: profileLoading } = useProfile(user?.id);
   const { data: myPosts, isLoading: postsLoading } = useUserPosts(user?.id ?? "");
   const { data: savedPosts, isLoading: savedLoading } = useSavedPosts(user?.id);
 
-  const handleSignOut = () => {
-    Alert.alert("تسجيل الخروج", "هل تريد تسجيل الخروج؟", [
-      { text: "إلغاء", style: "cancel" },
-      {
-        text: "تسجيل الخروج",
-        style: "destructive",
-        onPress: async () => {
-          await signOut();
-          router.replace("/(auth)/login");
-        },
-      },
-    ]);
+  const handleSignOut = async () => {
+    if (!confirmSignOut) {
+      setConfirmSignOut(true);
+      setTimeout(() => setConfirmSignOut(false), 4000);
+      return;
+    }
+    await signOut();
+    router.replace("/(auth)/login");
   };
 
   if (!user) {
@@ -59,16 +56,24 @@ export default function ProfileScreen() {
 
   const isLoading = profileLoading;
 
-  const displayData =
-    activeTab === "posts"
-      ? myPosts ?? []
-      : (savedPosts?.map((s) => s.post).filter(Boolean) as Post[]) ?? [];
+  const myPostsData: Post[] = myPosts ?? [];
+  const savedPostsData: Post[] = (savedPosts?.map((s) => s.post).filter(Boolean) as Post[]) ?? [];
+  const displayData = activeTab === "posts" ? myPostsData : savedPostsData;
 
   return (
     <FlatList
+      key={activeTab}
       data={displayData}
       keyExtractor={(item: Post) => item.id}
-      renderItem={({ item }) => <PostCard post={item} />}
+      numColumns={activeTab === "saved" ? 2 : 1}
+      columnWrapperStyle={activeTab === "saved" ? styles.savedGrid : undefined}
+      renderItem={({ item }) =>
+        activeTab === "saved" ? (
+          <SavedPostTile post={item} />
+        ) : (
+          <PostCard post={item} />
+        )
+      }
       showsVerticalScrollIndicator={false}
       ListHeaderComponent={
         <View>
@@ -110,8 +115,10 @@ export default function ProfileScreen() {
               onPress={handleSignOut}
               style={styles.signOutButton}
             >
-              <Ionicons name="log-out-outline" size={18} color="#ef4444" />
-              <Text style={styles.signOutText}>تسجيل الخروج</Text>
+              <Ionicons name="log-out-outline" size={18} color={confirmSignOut ? "#ef4444" : colors.muted} />
+              <Text style={[styles.signOutText, { color: confirmSignOut ? "#ef4444" : colors.muted }]}>
+                {confirmSignOut ? "اضغط مجدداً للتأكيد" : "تسجيل الخروج"}
+              </Text>
             </TouchableOpacity>
           </View>
 
@@ -243,6 +250,10 @@ const styles = StyleSheet.create({
   activeTabText: {
     fontFamily: "Almarai_700Bold",
     color: colors.primary,
+  },
+  savedGrid: {
+    paddingHorizontal: 13,
+    justifyContent: "flex-start",
   },
   loadingRow: {
     paddingVertical: 16,
