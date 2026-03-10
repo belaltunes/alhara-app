@@ -15,6 +15,10 @@ export default function Badge({ label }: BadgeProps) {
 
 const styles = StyleSheet.create({
   badge: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "flex-start",
+    alignItems: "flex-end",
     borderWidth: 1,
     borderColor: colors.border,
     borderRadius: 8,
@@ -26,5 +30,6 @@ const styles = StyleSheet.create({
     fontFamily: "Almarai_700Bold",
     fontSize: 12,
     color: colors.foreground,
+    textAlign: "right",
   },
 });

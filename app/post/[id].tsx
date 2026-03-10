@@ -7,6 +7,7 @@ import {
   ActivityIndicator,
   StyleSheet,
   Share,
+  Alert,
   Dimensions,
   Platform,
   NativeSyntheticEvent,
@@ -26,6 +27,7 @@ import { colors } from "@/constants/theme";
 import Badge from "@/components/Badge";
 import Avatar from "@/components/Avatar";
 import Header from "@/components/Header";
+import Footer from "@/components/Footer";
 import DrawerMenu from "@/components/DrawerMenu";
 
 const SCREEN_WIDTH = Dimensions.get("window").width;
@@ -40,7 +42,16 @@ export default function PostDetailScreen() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
-  const handleSave = () => toggleSave();
+  const handleSave = async () => {
+    if (!user) {
+      Alert.alert("تسجيل الدخول", "يجب تسجيل الدخول لحفظ المنشورات", [
+        { text: "إلغاء", style: "cancel" },
+        { text: "تسجيل الدخول", onPress: () => router.push("/(auth)/login") },
+      ]);
+      return;
+    }
+    await toggleSave();
+  };
 
   const handleShare = async () => {
     if (!post) return;
@@ -55,9 +66,12 @@ export default function PostDetailScreen() {
   if (isLoading || !post) {
     return (
       <SafeAreaView style={styles.safeArea} edges={["top", "bottom"]}>
-        <Header onMenuPress={() => setDrawerOpen(true)} />
-        <View style={styles.centered}>
-          <ActivityIndicator size="large" color={colors.primary} />
+        <View style={styles.pageContainer}>
+          <Header onMenuPress={() => setDrawerOpen(true)} />
+          <View style={styles.centered}>
+            <ActivityIndicator size="large" color={colors.primary} />
+          </View>
+          <Footer />
         </View>
         <DrawerMenu visible={drawerOpen} onClose={() => setDrawerOpen(false)} />
       </SafeAreaView>
@@ -69,10 +83,16 @@ export default function PostDetailScreen() {
 
   return (
     <SafeAreaView style={styles.safeArea} edges={["top", "bottom"]}>
-      {/* ── App Header ── */}
-      <Header onMenuPress={() => setDrawerOpen(true)} />
+      <View style={styles.pageContainer}>
+        {/* ── App Header ── */}
+        <Header onMenuPress={() => setDrawerOpen(true)} />
 
-      <ScrollView showsVerticalScrollIndicator={false} bounces>
+        <ScrollView
+          style={styles.scrollView}
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+          bounces
+        >
 
         {/* ── 1. Avatar (left) + Title (right) ── */}
         {/* Web LTR:     avatar FIRST → visual LEFT,  title SECOND → visual RIGHT
@@ -89,12 +109,6 @@ export default function PostDetailScreen() {
               <Text style={styles.userName} numberOfLines={1}>
                 {post.user?.display_name ?? "مستخدم"}
               </Text>
-              {post.user?.location ? (
-                <View style={styles.locationRow}>
-                  <Ionicons name="location-outline" size={12} color={colors.muted} />
-                  <Text style={styles.locationText}>{post.user.location}</Text>
-                </View>
-              ) : null}
             </TouchableOpacity>
           )}
 
@@ -119,12 +133,6 @@ export default function PostDetailScreen() {
               <Text style={styles.userName} numberOfLines={1}>
                 {post.user?.display_name ?? "مستخدم"}
               </Text>
-              {post.user?.location ? (
-                <View style={styles.locationRow}>
-                  <Ionicons name="location-outline" size={12} color={colors.muted} />
-                  <Text style={styles.locationText}>{post.user.location}</Text>
-                </View>
-              ) : null}
             </TouchableOpacity>
           )}
         </View>
@@ -194,23 +202,30 @@ export default function PostDetailScreen() {
           </View>
         )}
 
-        {/* Action row: save + share */}
+        {/* Action row (under images): Location (left) + Share + Save (right) */}
         <View style={styles.actionsRow}>
-          <TouchableOpacity onPress={handleShare} style={styles.actionBtn}>
-            <Ionicons name="arrow-redo-outline" size={22} color={colors.primary} />
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={handleSave}
-            disabled={isPending}
-            style={styles.actionBtn}
-          >
-            <Ionicons
-              name={isSaved ? "bookmark" : "bookmark-outline"}
-              size={24}
-              color={colors.primary}
-              style={{ opacity: isSaved ? 1 : 0.4 }}
-            />
-          </TouchableOpacity>
+          {post.user?.location ? (
+            <View style={styles.locationRow}>
+              <Ionicons name="location-outline" size={15} color={colors.muted} />
+              <Text style={styles.locationText}>{post.user.location}</Text>
+            </View>
+          ) : <View style={styles.locationRow} />}
+          <View style={styles.actionsGroup}>
+            <TouchableOpacity onPress={handleShare} style={styles.actionBtn}>
+              <Ionicons name="arrow-redo-outline" size={22} color={colors.primary} />
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={handleSave}
+              disabled={isPending}
+              style={styles.actionBtn}
+            >
+              <Ionicons
+                name={isSaved ? "bookmark" : "bookmark-outline"}
+                size={24}
+                color={isSaved ? colors.primary : colors.muted}
+              />
+            </TouchableOpacity>
+          </View>
         </View>
 
         {/* ── 3. Body ── */}
@@ -220,26 +235,28 @@ export default function PostDetailScreen() {
           </View>
         ) : null}
 
-        {/* ── 4. Tags (left) + Price (right) ── */}
+        {/* ── 4. Price (left) + Tags (right) ── */}
         <View style={styles.footerRow}>
-          {/* LEFT: Tags */}
+          {/* LEFT: Price */}
+          {post.price ? (
+            <View style={styles.pricePill}>
+              <Text style={styles.priceText}>{post.price}</Text>
+            </View>
+          ) : <View />}
+
+          {/* RIGHT: Tags */}
           <View style={styles.tagsBlock}>
             {post.tags?.map((tag, i) => (
               <Badge key={i} label={tag} />
             ))}
           </View>
-
-          {/* RIGHT: Price */}
-          {post.price ? (
-            <View style={styles.pricePill}>
-              <Text style={styles.priceText}>{post.price}</Text>
-            </View>
-          ) : null}
         </View>
 
         <View style={{ height: 40 }} />
       </ScrollView>
 
+      <Footer />
+      </View>
       <DrawerMenu visible={drawerOpen} onClose={() => setDrawerOpen(false)} />
     </SafeAreaView>
   );
@@ -247,6 +264,9 @@ export default function PostDetailScreen() {
 
 const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: "white" },
+  pageContainer: { flex: 1 },
+  scrollView: { flex: 1 },
+  scrollContent: { paddingBottom: 8 },
   centered: { flex: 1, alignItems: "center", justifyContent: "center" },
 
   /* ── 1. Post header ── */
@@ -299,11 +319,11 @@ const styles = StyleSheet.create({
   locationRow: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 2,
+    gap: 4,
   },
   locationText: {
     fontFamily: "Almarai_400Regular",
-    fontSize: 11,
+    fontSize: 13,
     color: colors.muted,
   },
 
@@ -356,12 +376,16 @@ const styles = StyleSheet.create({
   actionsRow: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "flex-end",
+    justifyContent: "space-between",
     paddingHorizontal: 16,
     paddingVertical: 10,
-    gap: 10,
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
+  },
+  actionsGroup: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
   },
   actionBtn: {
     width: 36,
@@ -372,6 +396,8 @@ const styles = StyleSheet.create({
 
   /* ── 3. Body ── */
   bodySection: {
+    justifyContent: "flex-start",
+    alignItems: "flex-end",
     paddingHorizontal: 18,
     paddingTop: 16,
     paddingBottom: 12,
@@ -382,11 +408,14 @@ const styles = StyleSheet.create({
     color: colors.muted,
     textAlign: "right",
     lineHeight: 24,
+    paddingTop: 18,
+    paddingBottom: 18,
   },
 
   /* ── 4. Footer: tags + price ── */
   footerRow: {
     flexDirection: "row",
+    direction: "ltr",
     alignItems: "center",
     justifyContent: "space-between",
     paddingHorizontal: 18,
@@ -397,10 +426,12 @@ const styles = StyleSheet.create({
   },
   tagsBlock: {
     flex: 1,
-    flexDirection: "row-reverse",
+    flexDirection: "row",
     flexWrap: "wrap",
     gap: 6,
-    justifyContent: "flex-start",
+    justifyContent: "flex-end",
+    alignItems: "center",
+    textAlign: "right",
   },
   pricePill: {
     backgroundColor: `${colors.accent}15`,

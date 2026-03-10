@@ -100,7 +100,7 @@ export function useToggleSave(postId: string, userId: string | undefined) {
       qc.invalidateQueries({ queryKey: ["saved_posts", userId] });
     },
     onError: () => {
-      // Silently fail for mock posts or when DB isn't set up
+      qc.invalidateQueries({ queryKey: ["saved_posts", userId] });
     },
   });
 

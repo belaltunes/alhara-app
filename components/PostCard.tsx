@@ -56,7 +56,7 @@ export default function PostCard({ post }: PostCardProps) {
     >
       {/* Post Header: Avatar (left) + Title/Subtitle (right) */}
       <View style={styles.postHeader}>
-        {/* Left: Avatar */}
+        {/* Left: Avatar + Name */}
         <TouchableOpacity
           onPress={(e) => {
             e.stopPropagation?.();
@@ -69,6 +69,9 @@ export default function PostCard({ post }: PostCardProps) {
             name={post.user?.display_name}
             size={47}
           />
+          <Text style={styles.avatarName} numberOfLines={1}>
+            {post.user?.display_name ?? "مستخدم"}
+          </Text>
         </TouchableOpacity>
 
         {/* Right: Title + Subtitle */}
@@ -122,14 +125,33 @@ export default function PostCard({ post }: PostCardProps) {
         </View>
       )}
 
-      {/* Icons: Message + Share */}
+      {/* Action Row (under images): Location (left) + Share + Save (right) */}
       <View style={styles.iconsRow}>
-        <TouchableOpacity onPress={handleShare} style={styles.iconButton}>
-          <Ionicons name="arrow-redo-outline" size={22} color={colors.primary} />
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.iconButton}>
-          <Ionicons name="mail-outline" size={28} color={colors.primary} />
-        </TouchableOpacity>
+        {/* LEFT: Location */}
+        {post.user?.location ? (
+          <View style={styles.locationBlock}>
+            <Ionicons name="location-outline" size={15} color={colors.muted} />
+            <Text style={styles.locationText}>{post.user.location}</Text>
+          </View>
+        ) : <View style={styles.locationBlock} />}
+
+        {/* RIGHT: Share + Save */}
+        <View style={styles.actionsBlock}>
+          <TouchableOpacity onPress={handleShare} style={styles.iconButton}>
+            <Ionicons name="arrow-redo-outline" size={22} color={colors.primary} />
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={handleSave}
+            disabled={isPending}
+            style={styles.iconButton}
+          >
+            <Ionicons
+              name={isSaved ? "bookmark" : "bookmark-outline"}
+              size={24}
+              color={isSaved ? colors.primary : colors.muted}
+            />
+          </TouchableOpacity>
+        </View>
       </View>
 
       {/* Body Text */}
@@ -139,33 +161,19 @@ export default function PostCard({ post }: PostCardProps) {
         </Text>
       </View>
 
-      {/* Footer: Save + Tags (left) + Price (right) */}
+      {/* Footer: Tags (right) + Price (left) */}
       <View style={styles.postFooter}>
-        {/* Left: Bookmark + Tags */}
-        <View style={styles.leftFooter}>
-          <TouchableOpacity
-            onPress={handleSave}
-            disabled={isPending}
-            style={styles.bookmarkButton}
-          >
-            <Ionicons
-              name={isSaved ? "bookmark" : "bookmark-outline"}
-              size={24}
-              color={colors.primary}
-              style={{ opacity: isSaved ? 1 : 0.4 }}
-            />
-          </TouchableOpacity>
-          <View style={styles.tagsRow}>
-            {post.tags?.slice(0, 3).map((tag, i) => (
-              <Badge key={i} label={tag} />
-            ))}
-          </View>
-        </View>
-
-        {/* Right: Price */}
+        {/* Left: Price */}
         {post.price ? (
           <Text style={styles.priceText}>{post.price}</Text>
-        ) : null}
+        ) : <View />}
+
+        {/* Right: Tags */}
+        <View style={styles.tagsRow}>
+          {post.tags?.slice(0, 3).map((tag, i) => (
+            <Badge key={i} label={tag} />
+          ))}
+        </View>
       </View>
     </TouchableOpacity>
   );
@@ -194,6 +202,15 @@ const styles = StyleSheet.create({
   },
   avatarContainer: {
     padding: 4,
+    alignItems: "center",
+    gap: 4,
+    minWidth: 60,
+  },
+  avatarName: {
+    fontFamily: "Almarai_700Bold",
+    fontSize: 12,
+    color: colors.foreground,
+    textAlign: "center",
   },
   titleContainer: {
     flex: 1,
@@ -231,9 +248,26 @@ const styles = StyleSheet.create({
   iconsRow: {
     flexDirection: "row",
     alignItems: "center",
+    justifyContent: "space-between",
     paddingHorizontal: 16,
     paddingVertical: 10,
-    gap: 12,
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
+  },
+  locationBlock: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+  },
+  locationText: {
+    fontFamily: "Almarai_400Regular",
+    fontSize: 13,
+    color: colors.muted,
+  },
+  actionsBlock: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
   },
   iconButton: {
     alignItems: "center",
@@ -251,34 +285,31 @@ const styles = StyleSheet.create({
     color: colors.muted,
     textAlign: "right",
     lineHeight: 20,
+    paddingTop: 16,
+    paddingBottom: 16,
   },
   postFooter: {
     flexDirection: "row",
+    direction: "ltr",
     alignItems: "center",
     justifyContent: "space-between",
     paddingHorizontal: 12,
     paddingVertical: 10,
-  },
-  leftFooter: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-  },
-  bookmarkButton: {
-    alignItems: "center",
-    justifyContent: "center",
-    minWidth: 30,
-    minHeight: 30,
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
   },
   tagsRow: {
-    flexDirection: "row-reverse",
+    flexDirection: "row",
     flexWrap: "wrap",
     gap: 4,
+    justifyContent: "flex-end",
+    alignItems: "center",
+    textAlign: "right",
   },
   priceText: {
     fontFamily: "Almarai_700Bold",
-    fontSize: 16,
+    fontSize: 15,
     color: colors.accent,
-    textAlign: "right",
+    textAlign: "left",
   },
 });

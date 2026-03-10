@@ -61,10 +61,10 @@ export default function SavedPostTile({ post }: SavedPostTileProps) {
         {/* User avatar + name */}
         {post.user && (
           <View style={styles.userRow}>
+            <Avatar uri={post.user.avatar_url} name={post.user.display_name} size={20} />
             <Text style={styles.userName} numberOfLines={1}>
               {post.user.display_name}
             </Text>
-            <Avatar uri={post.user.avatar_url} name={post.user.display_name} size={20} />
           </View>
         )}
       </View>
@@ -116,10 +116,9 @@ const styles = StyleSheet.create({
     lineHeight: 19,
   },
   userRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "flex-end",
-    gap: 5,
+    flexDirection: "column",
+    alignItems: "flex-end",
+    gap: 4,
   },
   userName: {
     fontFamily: "Almarai_400Regular",
