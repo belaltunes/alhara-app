@@ -27,6 +27,10 @@ export function usePost(id: string) {
   return useQuery<Post>({
     queryKey: ["post", id],
     queryFn: async () => {
+      // Serve mock post instantly without hitting the DB
+      const mockMatch = MOCK_POSTS.find((p) => p.id === id);
+      if (mockMatch) return mockMatch;
+
       const { data, error } = await supabase
         .from("posts")
         .select("*, user:users(*)")

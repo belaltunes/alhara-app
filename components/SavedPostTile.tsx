@@ -5,6 +5,7 @@ import { Post } from "@/types";
 import { colors } from "@/constants/theme";
 import { useToggleSave } from "@/hooks/usePosts";
 import { useAuth } from "@/context/AuthContext";
+import Avatar from "@/components/Avatar";
 
 const TILE_SIZE = (Dimensions.get("window").width - 18 * 2 - 10) / 2;
 
@@ -34,7 +35,7 @@ export default function SavedPostTile({ post }: SavedPostTileProps) {
         </View>
       )}
 
-      {/* Unsave button — top right corner */}
+      {/* Bookmark button — top right */}
       <TouchableOpacity
         onPress={(e) => {
           e.stopPropagation?.();
@@ -45,16 +46,27 @@ export default function SavedPostTile({ post }: SavedPostTileProps) {
       >
         <Ionicons
           name={isSaved ? "bookmark" : "bookmark-outline"}
-          size={18}
-          color={isSaved ? colors.accent : "white"}
+          size={17}
+          color="white"
+          style={{ opacity: isSaved ? 1 : 0.7 }}
         />
       </TouchableOpacity>
 
-      {/* Title */}
-      <View style={styles.titleBox}>
+      {/* Title + user row */}
+      <View style={styles.infoBox}>
         <Text style={styles.titleText} numberOfLines={2}>
           {post.title}
         </Text>
+
+        {/* User avatar + name */}
+        {post.user && (
+          <View style={styles.userRow}>
+            <Text style={styles.userName} numberOfLines={1}>
+              {post.user.display_name}
+            </Text>
+            <Avatar uri={post.user.avatar_url} name={post.user.display_name} size={20} />
+          </View>
+        )}
       </View>
     </TouchableOpacity>
   );
@@ -72,11 +84,11 @@ const styles = StyleSheet.create({
   },
   image: {
     width: "100%",
-    height: TILE_SIZE * 0.75,
+    height: TILE_SIZE * 0.8,
   },
   imagePlaceholder: {
     width: "100%",
-    height: TILE_SIZE * 0.75,
+    height: TILE_SIZE * 0.8,
     backgroundColor: colors.border,
     alignItems: "center",
     justifyContent: "center",
@@ -85,15 +97,16 @@ const styles = StyleSheet.create({
     position: "absolute",
     top: 6,
     right: 6,
-    backgroundColor: "rgba(0,0,0,0.4)",
+    backgroundColor: colors.primary,
     borderRadius: 14,
     width: 28,
     height: 28,
     alignItems: "center",
     justifyContent: "center",
   },
-  titleBox: {
+  infoBox: {
     padding: 8,
+    gap: 6,
   },
   titleText: {
     fontFamily: "Almarai_700Bold",
@@ -101,5 +114,18 @@ const styles = StyleSheet.create({
     color: colors.foreground,
     textAlign: "right",
     lineHeight: 19,
+  },
+  userRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "flex-end",
+    gap: 5,
+  },
+  userName: {
+    fontFamily: "Almarai_400Regular",
+    fontSize: 11,
+    color: colors.muted,
+    textAlign: "right",
+    flexShrink: 1,
   },
 });

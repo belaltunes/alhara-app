@@ -151,7 +151,8 @@ export default function PostCard({ post }: PostCardProps) {
             <Ionicons
               name={isSaved ? "bookmark" : "bookmark-outline"}
               size={24}
-              color={isSaved ? colors.accent : colors.primary}
+              color={colors.primary}
+              style={{ opacity: isSaved ? 1 : 0.4 }}
             />
           </TouchableOpacity>
           <View style={styles.tagsRow}>
