@@ -42,6 +42,7 @@ export default function UploadPostScreen() {
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  const [price, setPrice] = useState("");
   const [category, setCategory] = useState<CategoryId | null>(null);
   const [images, setImages] = useState<PickedImage[]>([]);
   const [loading, setLoading] = useState(false);
@@ -124,6 +125,26 @@ export default function UploadPostScreen() {
     }
   };
 
+  // ─── Ensure a row exists in public.users before inserting a post ──
+  const ensureUserProfile = async (): Promise<string | null> => {
+    const displayName =
+      (user!.user_metadata?.full_name as string) ??
+      (user!.user_metadata?.display_name as string) ??
+      user!.email?.split("@")[0] ??
+      "مستخدم";
+    const { error } = await supabase.from("users").upsert(
+      {
+        id: user!.id,
+        email: user!.email!,
+        display_name: displayName,
+        avatar_url: null,
+        location: user!.user_metadata?.location ?? null,
+      },
+      { onConflict: "id", ignoreDuplicates: true }
+    );
+    return error?.message ?? null;
+  };
+
   // ─── Submit ───────────────────────────────────────────────────────
   const handleSubmit = async () => {
     setErrorMsg("");
@@ -142,6 +163,14 @@ export default function UploadPostScreen() {
 
     setLoading(true);
 
+    // Create user profile row if it doesn't exist yet (prevents FK violation)
+    const profileError = await ensureUserProfile();
+    if (profileError) {
+      setLoading(false);
+      setErrorMsg(`تعذر إعداد الملف الشخصي: ${profileError}`);
+      return;
+    }
+
     // Upload images
     const uploadedUrls: string[] = [];
     for (const img of images) {
@@ -159,7 +188,7 @@ export default function UploadPostScreen() {
       description: description.trim(),
       images: uploadedUrls,
       tags: [categoryLabel],
-      price: null,
+      price: price.trim() || null,
     });
 
     setLoading(false);
@@ -561,6 +590,45 @@ export default function UploadPostScreen() {
             >
               {description.length}/1000
             </Text>
+          </View>
+
+          {/* ── Price (optional) ── */}
+          <View style={{ gap: 8 }}>
+            <Text
+              style={{
+                fontFamily: "Almarai_700Bold",
+                fontSize: 15,
+                color: colors.foreground,
+                textAlign: "right",
+              }}
+            >
+              السعر
+            </Text>
+            <View
+              style={{
+                borderWidth: 1,
+                borderColor: colors.border,
+                borderRadius: 10,
+                paddingHorizontal: 14,
+                paddingVertical: 4,
+                minHeight: 48,
+                justifyContent: "center",
+              }}
+            >
+              <TextInput
+                placeholder="مثال: ٥٠ شيكل أو ٨٠٠ شيكل/شهر (اختياري)"
+                placeholderTextColor={colors.muted}
+                value={price}
+                onChangeText={setPrice}
+                style={{
+                  fontFamily: "Almarai_400Regular",
+                  fontSize: 15,
+                  color: colors.foreground,
+                  textAlign: "right",
+                }}
+                textAlign="right"
+              />
+            </View>
           </View>
 
           {/* ── Inline error ── */}
